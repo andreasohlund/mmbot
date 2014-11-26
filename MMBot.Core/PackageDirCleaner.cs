@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ScriptCs;
 
 namespace MMBot
 {
     public static class PackageDirCleaner
     {
-        const string CleanUpFilePath = @".\packages-to-cleanup.txt";
+
         public static void CleanUpPackages()
         {
             if (!File.Exists(CleanUpFilePath))
@@ -28,5 +30,14 @@ namespace MMBot
         {
             File.WriteAllLines(CleanUpFilePath, packageFoldersToDelete);
         }
+
+        static string CleanUpFilePath
+        {
+            get
+            {
+                return Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"packages-to-cleanup.txt");
+            }
+        }
+
     }
 }
