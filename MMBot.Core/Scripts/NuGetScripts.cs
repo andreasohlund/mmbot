@@ -243,13 +243,17 @@ namespace MMBot.Scripts
                 }
 
                 var packageFoldersToDelete = postInstallState.Except(latestVersions).Select(p => Path.Combine(path, p.Id + "." + p.Version)).ToList();
-                var setDeleteFolders = robot.Brain.Set(NugetFoldersToDeleteSetting, packageFoldersToDelete);
+
+                if (packageFoldersToDelete.Any())
+                {
+                    PackageDirCleaner.RegisterDirectoriesToDelete(packageFoldersToDelete);
+                    msg.Send("Old package versions to cleanup on next reset: ",string.Join(", ",packageFoldersToDelete));
+                }
 
                 if (ShouldAutoResetAfterUpdate(robot) || (msg.Match.Length >= 5 && Regex.IsMatch(msg.Match[4], Restart)))
                 {
                     //They submitted the reset parameter or auto-reset is on.
                     msg.Send("Resetting...please wait.");
-                    setDeleteFolders.Wait();
                     robot.Reset();
                 }
             });
