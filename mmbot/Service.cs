@@ -8,9 +8,11 @@ namespace mmbot
 {
     partial class Service : ServiceBase
     {
-        private Options _options;
-        private Thread _thread;
-        private Robot _robot;
+        readonly Options _options;
+        Thread _thread;
+        bool _shutdownRequested;
+        ManualResetEvent _robotIsStopped;
+        bool _isStopped;
 
         public Service(Options options)
         {
@@ -24,6 +26,7 @@ namespace mmbot
             {
                 return;
             }
+            _robotIsStopped = new ManualResetEvent(false);
 
             _thread = new Thread(MMBotWorkerThread);
             _thread.Name = "MMBot Worker Thread";
@@ -33,23 +36,25 @@ namespace mmbot
 
         protected override void OnStop()
         {
-            if (_robot == null)
+            _shutdownRequested = true;
+            RobotRunner.Stop();
+
+            _robotIsStopped.WaitOne(TimeSpan.FromSeconds(20));
+
+            if (!_isStopped)
             {
-                return;
+                _thread.Abort();
             }
-            _robot.Shutdown().Wait(TimeSpan.FromSeconds(10));
+
         }
 
         void MMBotWorkerThread()
         {
-            while (true)
+            while (!_shutdownRequested)
             {
-                _robot = Initializer.StartBot(_options).Result;
-
-                var resetEvent = new AutoResetEvent(false);
-                _robot.ResetRequested += (sender, args) => resetEvent.Set();
-                resetEvent.WaitOne();
+                RobotRunner.Run(_options);
             }
+            _isStopped = true;
         }
     }
 }
