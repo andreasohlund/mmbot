@@ -28,9 +28,11 @@ namespace mmbot
             }
             _robotIsStopped = new ManualResetEvent(false);
 
-            _thread = new Thread(MMBotWorkerThread);
-            _thread.Name = "MMBot Worker Thread";
-            _thread.IsBackground = true;
+            _thread = new Thread(MMBotWorkerThread)
+            {
+                Name = "MMBot Worker Thread", 
+                IsBackground = true
+            };
             _thread.Start();
         }
 
@@ -54,6 +56,7 @@ namespace mmbot
             {
                 RobotRunner.Run(_options);
             }
+            _robotIsStopped.Set();
             _isStopped = true;
         }
     }
