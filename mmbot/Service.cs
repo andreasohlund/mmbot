@@ -28,36 +28,35 @@ namespace mmbot
             }
             _robotIsStopped = new ManualResetEvent(false);
 
-            _thread = new Thread(MMBotWorkerThread)
+            _thread = new Thread(MmBotWorkerThread)
             {
-                Name = "MMBot Worker Thread", 
+                Name = "MMBot Worker Thread",
                 IsBackground = true
             };
+
             _thread.Start();
         }
 
         protected override void OnStop()
         {
-            _shutdownRequested = true;
             RobotRunner.Stop();
 
             _robotIsStopped.WaitOne(TimeSpan.FromSeconds(20));
 
             if (!_isStopped)
             {
+                // robot didn't shutdown gracefully so we just kill the thread        
                 _thread.Abort();
             }
-
         }
 
-        void MMBotWorkerThread()
+        void MmBotWorkerThread()
         {
-            while (!_shutdownRequested)
-            {
-                RobotRunner.Run(_options);
-            }
+            RobotRunner.Run(_options);
+
+            _isStopped = true; 
+
             _robotIsStopped.Set();
-            _isStopped = true;
         }
     }
 }

@@ -5,7 +5,8 @@ namespace mmbot
 {
     public static class RobotRunner
     {
-        private static RobotWrapper _wrapper;
+        static RobotWrapper _wrapper;
+        static bool _stopRequested;
 
         public  static void Run(Options options)
         {
@@ -22,11 +23,15 @@ namespace mmbot
 
             PackageDirCleaner.CleanUpPackages();
 
-            Run(options);
+            if (!_stopRequested)
+            {
+                Run(options);            
+            }
         }
 
         public static void Stop()
         {
+            _stopRequested = true;
             _wrapper.Stop();
         }
 
